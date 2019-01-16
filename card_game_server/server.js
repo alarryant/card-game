@@ -104,7 +104,9 @@ wss.on('connection', (ws) => {
     {cardId: 52, number: 13, suit: "heart"}];
 
   ws.on('message', function incoming(data) {
-    console.log(data);
+    const clientData = JSON.parse(data);
+
+    console.log(clientData);
     wss.clients.forEach(client => {
       client.send("this workin");
     });

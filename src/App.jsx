@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import Form from './Form.jsx';
 
 import Header from './_header.jsx';
+import Login from './Login.jsx';
 
 class App extends Component {
 
@@ -10,6 +11,15 @@ class App extends Component {
 
     this.state = {loading: true};
     this.selectGame = this.selectGame.bind(this);
+  }
+
+  loginInfo = (email, password) => {
+    const userLogin = {
+      type: 'login',
+      email: email,
+      password: password
+    }
+    this.socket.send(JSON.stringify(userLogin));
   }
 
   selectGame = game => {
@@ -37,6 +47,7 @@ class App extends Component {
     return (
       <div>
       <Header />
+      <Login loginInfo = {this.loginInfo} />
       <Form selectGame={this.selectGame} />
       </div>
     );
