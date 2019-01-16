@@ -11,7 +11,8 @@ class App extends Component {
   }
 
   selectGame = game => {
-    this.socket.send(JSON.stringify(game));
+    let gameData = {type: "gameType", data: game}
+    this.socket.send(JSON.stringify(gameData));
   }
 
   componentDidMount() {
@@ -22,7 +23,7 @@ class App extends Component {
 
     // receives data from server
     this.socket.onmessage = (event) => {
-      console.log(event.data);
+      console.log(JSON.parse(event.data));
     };
 
     // After 3 seconds, set `loading` to false in the state.
