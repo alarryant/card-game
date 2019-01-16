@@ -1,28 +1,40 @@
 import React, {Component} from 'react';
+import Form from './Form.jsx';
 
 import Header from './_header.jsx';
 
 class App extends Component {
-  constructor() {
-    super();
-    // websocket setup
-    const socketServerURL = 'ws://localhost:3001'
-    this.socket = new WebSocket(socketServerURL);
+
+  constructor(props) {
+    super(props);
+
+    this.state = {loading: true};
+    this.selectGame = this.selectGame.bind(this);
   }
-  
+
+  selectGame = game => {
+    this.socket.send(JSON.stringify(game));
+  }
 
   componentDidMount() {
-    // websocket connection to server
-    this.socket.onopen = () => {
-      console.log('Connected to Server');
-    };
-  }
+    // connects to Web Socket server
+    this.socket = new WebSocket(
+      'ws://localhost:3001'
+    );
 
+    // receives data from server
+    this.socket.onmessage = (event) => {
+      console.log(event.data);
+    };
+
+    // After 3 seconds, set `loading` to false in the state.
+    setTimeout(() => {
+      this.setState({ loading: false });
+    }, 3000);
+  }
   render() {
     return (
-      <div>
-        <Header/>
-      </div>
+      <Form selectGame={this.selectGame} />
     );
   }
 }

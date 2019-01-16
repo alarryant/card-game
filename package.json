@@ -45,10 +45,15 @@
   },
   "dependencies": {
     "express": "4.16.4",
+    "pg": "^7.8.0",
     "react": "15.4.2",
     "react-bootstrap": "^0.32.4",
     "react-dom": "15.4.2",
+<<<<<<< HEAD
     "webpack": "^4.28.4",
+=======
+    "react-redux": "^6.0.0",
+>>>>>>> a854448013d21587bf679b5f86d37e28e0d53382
     "ws": "6.1.2"
   }
 }
