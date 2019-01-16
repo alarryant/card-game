@@ -4,7 +4,8 @@ class Form extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      selectedOption: "option1"
+      selectedOption: "option1",
+      submitted: false
     };
     this.handleOptionChange = this.handleOptionChange.bind(this);
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
@@ -18,12 +19,21 @@ class Form extends Component {
 
   handleFormSubmit = event => {
     event.preventDefault();
+    this.setState({
+      submitted: true
+    })
     this.props.selectGame(this.state.selectedOption);
   };
 
   render() {
     return (
       <div>
+        {this.state.submitted ? 
+        <div className = "roomBorder">
+          <h5>Welcome Player One!</h5>
+        </div>
+          :
+        <div>
         <h5>Choose your card game:</h5>
         <form onSubmit={this.handleFormSubmit}>
           <label>
@@ -48,6 +58,8 @@ class Form extends Component {
           </label>
           <input type="submit" value="Submit" />
         </form>
+      </div>
+        }
       </div>
     )
   }

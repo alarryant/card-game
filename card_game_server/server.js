@@ -22,7 +22,9 @@ wss.on('connection', (ws) => {
   console.log('Client connected');
 
   ws.on('message', function incoming(data) {
-    console.log(data);
+    const clientData = JSON.parse(data);
+
+    console.log(clientData);
     wss.clients.forEach(client => {
       client.send("hello this works lol");
     });
