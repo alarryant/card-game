@@ -41,11 +41,14 @@
     "sass-loader": "6.0.0",
     "sockjs-client": "^1.1.2",
     "style-loader": "0.13.1",
-    "webpack": "2.2.1",
-    "webpack-dev-server": "2.3.0"
+    "webpack-dev-server": "3.0.0"
   },
   "dependencies": {
+    "express": "4.16.4",
     "react": "15.4.2",
-    "react-dom": "15.4.2"
+    "react-bootstrap": "^0.32.4",
+    "react-dom": "15.4.2",
+    "webpack": "^4.28.4",
+    "ws": "6.1.2"
   }
 }
