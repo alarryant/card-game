@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import Form from './Form.jsx';
 
+import Header from './_header.jsx';
+
 class App extends Component {
 
   constructor(props) {
@@ -33,7 +35,10 @@ class App extends Component {
   }
   render() {
     return (
+      <div>
+      <Header />
       <Form selectGame={this.selectGame} />
+      </div>
     );
   }
 }
