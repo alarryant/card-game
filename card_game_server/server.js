@@ -19,33 +19,6 @@ const wss = new SocketServer({ server });
 // When a client connects they are assigned a socket, represented by
 // the ws parameter in the callback.
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
-
-function selectUniqueCard(deckArray) {
-  return deckArray[getRandomInt(0, 51)];
-}
-
-function createWarHands(deckArray) {
-  let player1Hand = [];
-  let player2Hand = deckArray;
-  while (player1Hand.length < 26) {
-    let card = selectUniqueCard(deckArray);
-    if (!player1Hand.includes(card) && card) {
-      player1Hand.push(card);
-      let cardIndex = player2Hand.indexOf(card);
-      if (cardIndex > -1) {
-        player2Hand.splice(cardIndex, 1);
-      }
-    }
-  }
-  let hands = {player1Hand: player1Hand, player2Hand: player2Hand};
-  return hands;
-};
-
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
@@ -103,12 +76,20 @@ wss.on('connection', (ws) => {
     {cardId: 51, number: 13, suit: "club"},
     {cardId: 52, number: 13, suit: "heart"}];
 
+  var currentDeck = {type: "currentDeck", data: fullDeck};
+
   ws.on('message', function incoming(data) {
     const clientData = JSON.parse(data);
 
     console.log(clientData);
+
+    if (clientData.type === "blackjackHand") {
+      console.log("this is blackjack hand in server", clientData);
+    }
+
+    // console.log(clientData);
     wss.clients.forEach(client => {
-      client.send("this workin");
+      client.send(JSON.stringify(currentDeck));
     });
   });
 
