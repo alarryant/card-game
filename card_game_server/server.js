@@ -81,10 +81,10 @@ wss.on('connection', (ws) => {
   ws.on('message', function incoming(data) {
     const clientData = JSON.parse(data);
 
-    console.log(clientData);
-
     if (clientData.type === "blackjackHand") {
-      console.log("this is blackjack hand in server", clientData);
+      wss.clients.forEach(client => {
+        client.send(JSON.stringify(clientData));
+      });
     }
 
     // console.log(clientData);

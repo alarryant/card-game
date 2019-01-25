@@ -44,6 +44,7 @@
     "webpack-dev-server": "3.0.0"
   },
   "dependencies": {
+    "cardsJS": "^1.1.1",
     "express": "4.16.4",
     "pg": "^7.8.0",
     "react": "15.4.2",
