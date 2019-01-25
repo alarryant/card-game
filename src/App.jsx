@@ -10,7 +10,7 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {loading: true};
+    this.state = {};
     this.selectGame = this.selectGame.bind(this);
     this.sendBlackjackHands = this.sendBlackjackHands.bind(this);
   }
@@ -48,24 +48,16 @@ class App extends Component {
         this.setState({currentDeck: parsedData.data});
       } else if (parsedData.type === "blackjackHand") {
         this.setState({currentDeck: parsedData.data.currentDeck, player1Hand: parsedData.data.player1Hand, player2Hand: parsedData.data.player2Hand});
-        console.log("this is in app", this.state);
       }
     };
-
-    // After 3 seconds, set `loading` to false in the state.
-    setTimeout(() => {
-      this.setState({ loading: false });
-    }, 3000);
   }
   render() {
-
-    console.log("this is in app, render", this.state.gameType);
     return (
       <div>
-      <Header />
-      <Login loginInfo = {this.loginInfo} />
-      <Form selectGame={this.selectGame} />
-      {this.state.gameType === "blackjack" ? <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/> : ''}
+        <Header />
+        <Login loginInfo = {this.loginInfo} />
+        <Form selectGame={this.selectGame} />
+        {this.state.gameType === "blackjack" ? <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/> : ''}
       </div>
     );
   }
