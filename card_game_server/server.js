@@ -91,13 +91,13 @@ wss.on('connection', (ws) => {
     switch (clientData.type) {
 
       case 'gameType':
-      if (clientData.data === 'blackjack' && queue.includes(clientID) === false) {
-        queue.push(clientID);
-        console.log("In queue: ", queue);
-      }
+      wss.clients.forEach(client => {
+        if (clientData.data === 'blackjack' && queue.includes(clientID) === false) {
+          queue.push(clientID);
+          console.log("In queue: ", queue);
+        }
 
       // BUG: adding duplicate IDs when `queue.length >= 2 || queue.length === 2`
-      wss.clients.forEach(client => {
         if (queue.length > 2) {
           let players = queue.splice(0, 2);
           
@@ -107,6 +107,7 @@ wss.on('connection', (ws) => {
             playerOne: players[0],
             playerTwo: players[1]
           }
+
           client.send(JSON.stringify(gameSession));
         }
       });
