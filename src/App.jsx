@@ -3,6 +3,7 @@ import Form from './Form.jsx';
 
 import Header from './_header.jsx';
 import Login from './Login.jsx';
+import Blackjack from './Blackjack.jsx';
 
 class App extends Component {
 
@@ -11,6 +12,7 @@ class App extends Component {
 
     this.state = {loading: true};
     this.selectGame = this.selectGame.bind(this);
+    this.sendBlackjackHands = this.sendBlackjackHands.bind(this);
   }
 
   loginInfo = (email, password) => {
@@ -24,7 +26,13 @@ class App extends Component {
 
   selectGame = game => {
     let gameData = {type: "gameType", data: game}
+    this.setState({gameType: game});
     this.socket.send(JSON.stringify(gameData));
+  }
+
+  sendBlackjackHands = hands => {
+    let handData = {type: "blackjackHand", data: hands}
+    this.socket.send(JSON.stringify(handData));
   }
 
   componentDidMount() {
@@ -36,14 +44,30 @@ class App extends Component {
     // receives data from server
     this.socket.onmessage = (event) => {
       let serverData = JSON.parse(event.data);
-      let gameID = serverData.gameID;
-      let playerOne = serverData.playerOne;
-      let playerTwo = serverData.playerTwo;
+      
+      switch (serverData.type) {
 
-      this.setState({ gameID: gameID, 
-                      playerOne: playerOne, 
-                      playerTwo: playerTwo });
-      // console.log(this.state)
+        case 'session':
+        let gameID = serverData.gameID;
+        let playerOne = serverData.playerOne;
+        let playerTwo = serverData.playerTwo;
+
+        this.setState({ gameID: gameID, 
+                        playerOne: playerOne, 
+                        playerTwo: playerTwo });
+        console.log("BEGIN GAME! ", this.state)
+        break;
+
+        case 'currentDeck':
+        this.setState({currentDeck: serverData.data});
+        break;
+
+        case 'blackjackHand':
+        this.setState({currentDeck: serverData.data.currentDeck, 
+                       player1Hand: serverData.data.player1Hand, 
+                       player2Hand: serverData.data.player2Hand});
+        break;
+      }
     };
 
     // After 3 seconds, set `loading` to false in the state.
@@ -56,7 +80,8 @@ class App extends Component {
       <div>
       <Header />
       <Login loginInfo = {this.loginInfo} />
-      <Form selectGame={this.selectGame} gameID={this.state.gameID} playerOne={this.state.playerOne} playerTwo={this.state.playerTwo}/>
+      <Form selectGame={this.selectGame} />
+      {this.state.gameType === "blackjack" ? <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/> : ''}
       </div>
     );
   }

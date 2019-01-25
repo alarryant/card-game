@@ -23,43 +23,11 @@ const wss = new SocketServer({ server });
 // When a client connects they are assigned a socket, represented by
 // the ws parameter in the callback.
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
-
-function selectUniqueCard(deckArray) {
-  return deckArray[getRandomInt(0, 51)];
-}
-
-function createWarHands(deckArray) {
-  let player1Hand = [];
-  let player2Hand = deckArray;
-  while (player1Hand.length < 26) {
-    let card = selectUniqueCard(deckArray);
-    if (!player1Hand.includes(card) && card) {
-      player1Hand.push(card);
-      let cardIndex = player2Hand.indexOf(card);
-      if (cardIndex > -1) {
-        player2Hand.splice(cardIndex, 1);
-      }
-    }
-  }
-  let hands = {player1Hand: player1Hand, player2Hand: player2Hand};
-  return hands;
-};
-
-
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
   // assign unique ID for each client on connection
   let clientID = uuidv4();
-
-  wss.clients.forEach(client => {
-    client.send(JSON.stringify(clientID));
-  });
 
   const fullDeck = [
     {cardId: 1, number: 1, suit: "diamond"},
@@ -115,31 +83,47 @@ wss.on('connection', (ws) => {
     {cardId: 51, number: 13, suit: "club"},
     {cardId: 52, number: 13, suit: "heart"}];
 
+  var currentDeck = {type: "currentDeck", data: fullDeck};
+
   ws.on('message', function incoming(data) {
     const clientData = JSON.parse(data);
 
-    wss.clients.forEach(client => {
+    switch (clientData.type) {
 
-      if (clientData.data === 'blackjack') {
-        if (queue.includes(clientID) === false) {
-          queue.push(clientID);
-          console.log("In queue: ", queue);
-        }
+      case 'gameType':
+      if (clientData.data === 'blackjack' && queue.includes(clientID) === false) {
+        queue.push(clientID);
+        console.log("In queue: ", queue);
+      }
 
-// BUG: adding duplicate IDs when `queue.length >= 2 || queue.length === 2`
+      // BUG: adding duplicate IDs when `queue.length >= 2 || queue.length === 2`
+      wss.clients.forEach(client => {
         if (queue.length > 2) {
           let players = queue.splice(0, 2);
           
           let gameSession = {
+            type: 'session',
             gameID: uuidv4(),
             playerOne: players[0],
             playerTwo: players[1]
           }
           client.send(JSON.stringify(gameSession));
         }
-      }
+      });
+      break;
+
+      case 'blackjackHand':
+      wss.clients.forEach(client => {
+        client.send(JSON.stringify(clientData));
+      });
+      break;
+    }
+
+      wss.clients.forEach(client => {
+        client.send(JSON.stringify(currentDeck));
+      });
     });
-  });
+
 
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
   ws.on('close', () => {
