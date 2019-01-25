@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import CardsJS from 'cardsJS';
+import { Hand, Card, CardBack } from 'react-deck-o-cards';
 
 class BlackjackGame extends Component {
   constructor(props) {
@@ -57,11 +57,21 @@ class BlackjackGame extends Component {
   };
 
   displayBlackjackHand(hand=[]) {
+
+    const defHandStyle = {
+      maxHeight:'34vh',
+      minHeight:'34vh',
+
+      maxWidth:'100vw',
+      padding: 0,
+    };
+
     return hand.map(card => {
       return (
         <div>
-          <p>{card.number}</p>
-          <p>{card.suit}</p>
+          <Hand cards={[
+      { rank: card.number, suit: card.suit },
+    ]} hidden={false} style={defHandStyle} />
         </div>
       )
     })
@@ -75,6 +85,7 @@ class BlackjackGame extends Component {
   }
 
   render() {
+
     return (
       <div>
         <h1>yes this works</h1>
