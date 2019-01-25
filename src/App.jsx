@@ -10,7 +10,7 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {loading: true};
+    this.state = {};
     this.selectGame = this.selectGame.bind(this);
     this.sendBlackjackHands = this.sendBlackjackHands.bind(this);
   }
@@ -69,19 +69,14 @@ class App extends Component {
         break;
       }
     };
-
-    // After 3 seconds, set `loading` to false in the state.
-    setTimeout(() => {
-      this.setState({ loading: false });
-    }, 3000);
   }
   render() {
     return (
       <div>
-      <Header />
-      <Login loginInfo = {this.loginInfo} />
-      <Form selectGame={this.selectGame} />
-      {this.state.gameType === "blackjack" ? <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/> : ''}
+        <Header />
+        <Login loginInfo = {this.loginInfo} />
+        <Form selectGame={this.selectGame} />
+        {this.state.gameType === "blackjack" ? <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/> : ''}
       </div>
     );
   }

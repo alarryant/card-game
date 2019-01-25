@@ -28,7 +28,7 @@ class BlackjackGame extends Component {
     let newDeck = deckArray;
 
     while (player1Hand.length < 2) {
-      let card = this.selectUniqueCard(deckArray);
+      let card = this.selectUniqueCard(newDeck);
 
       if ((!player2Hand.includes(card) && !player1Hand.includes(card)) && card) {
         player1Hand.push(card);
@@ -40,7 +40,7 @@ class BlackjackGame extends Component {
     }
 
     while (player2Hand.length < 2) {
-      let card = this.selectUniqueCard(deckArray);
+      let card = this.selectUniqueCard(newDeck);
 
       if ((!player2Hand.includes(card) && !player1Hand.includes(card)) && card) {
         player2Hand.push(card);
@@ -52,6 +52,7 @@ class BlackjackGame extends Component {
     }
 
     let hands = {player1Hand: player1Hand, player2Hand: player2Hand, currentDeck: newDeck};
+    this.setState({player1Hand: player1Hand, player2Hand: player2Hand, currentDeck: newDeck});
     return hands;
   };
 
@@ -59,8 +60,8 @@ class BlackjackGame extends Component {
     return hand.map(card => {
       return (
         <div>
-          <p>card.number</p>
-          <p>card.suit</p>
+          <p>{card.number}</p>
+          <p>{card.suit}</p>
         </div>
       )
     })
@@ -69,21 +70,18 @@ class BlackjackGame extends Component {
   componentDidMount(props) {
     // temporary solution for async
     setTimeout(() => {
-      this.setState({ currentDeck: this.props.currentDeck, player1Hand: this.props.player1Hand, player2Hand: this.props.player2Hand });
-      console.log("this is in comp did mount", this.state);
-      this.props.sendBlackjackHands(this.createBlackjackHands(this.state.currentDeck));
+      this.props.sendBlackjackHands(this.createBlackjackHands(this.props.currentDeck));
     }, 3000);
   }
 
   render() {
-    // console.log("this is in blackjack", this.props);
     return (
       <div>
-      <h1>yes this works</h1>
-      <h5>Player 1</h5>
-      {this.displayBlackjackHand(this.state.player1Hand)}
-      <h5>Player 2</h5>
-      {this.displayBlackjackHand(this.state.player2Hand)}
+        <h1>yes this works</h1>
+        <h5>Player 1</h5>
+        {this.displayBlackjackHand(this.state.player1Hand)}
+        <h5>Player 2</h5>
+        {this.displayBlackjackHand(this.state.player2Hand)}
       </div>);
   }
 }
