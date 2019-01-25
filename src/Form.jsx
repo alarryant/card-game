@@ -30,7 +30,10 @@ class Form extends Component {
       <div>
         {this.state.submitted ? 
         <div className = "roomBorder">
-          <h5>Welcome Player One!</h5>
+          <h5>Game Session: {this.props.gameID}</h5>
+          {/* if ID matches the playerID?? */}
+          {}
+          <h5>Welcome Player to {this.state.selectedOption.toUpperCase()}!</h5>
         </div>
           :
         <div>

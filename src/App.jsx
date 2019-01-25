@@ -35,7 +35,15 @@ class App extends Component {
 
     // receives data from server
     this.socket.onmessage = (event) => {
-      console.log(JSON.parse(event.data));
+      let serverData = JSON.parse(event.data);
+      let gameID = serverData.gameID;
+      let playerOne = serverData.playerOne;
+      let playerTwo = serverData.playerTwo;
+
+      this.setState({ gameID: gameID, 
+                      playerOne: playerOne, 
+                      playerTwo: playerTwo });
+      // console.log(this.state)
     };
 
     // After 3 seconds, set `loading` to false in the state.
@@ -48,7 +56,7 @@ class App extends Component {
       <div>
       <Header />
       <Login loginInfo = {this.loginInfo} />
-      <Form selectGame={this.selectGame} />
+      <Form selectGame={this.selectGame} gameID={this.state.gameID} playerOne={this.state.playerOne} playerTwo={this.state.playerTwo}/>
       </div>
     );
   }
