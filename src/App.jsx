@@ -43,11 +43,31 @@ class App extends Component {
 
     // receives data from server
     this.socket.onmessage = (event) => {
-      let parsedData = JSON.parse(event.data);
-      if (parsedData.type === "currentDeck") {
-        this.setState({currentDeck: parsedData.data});
-      } else if (parsedData.type === "blackjackHand") {
-        this.setState({currentDeck: parsedData.data.currentDeck, player1Hand: parsedData.data.player1Hand, player2Hand: parsedData.data.player2Hand});
+      let serverData = JSON.parse(event.data);
+      console.log(serverData)
+      
+      switch (serverData.type) {
+
+        case 'session':
+        let gameID = serverData.gameID;
+        let playerOne = serverData.playerOne;
+        let playerTwo = serverData.playerTwo;
+
+        this.setState({ gameID: gameID, 
+                        playerOne: playerOne, 
+                        playerTwo: playerTwo });
+        console.log("BEGIN GAME! ", this.state)
+        break;
+
+        case 'currentDeck':
+        this.setState({currentDeck: serverData.data});
+        break;
+
+        case 'blackjackHand':
+        this.setState({currentDeck: serverData.data.currentDeck, 
+                       player1Hand: serverData.data.player1Hand, 
+                       player2Hand: serverData.data.player2Hand});
+        break;
       }
     };
   }
@@ -56,8 +76,10 @@ class App extends Component {
       <div>
         <Header />
         <Login loginInfo = {this.loginInfo} />
-        <Form selectGame={this.selectGame} />
-        {this.state.gameType === "blackjack" ? <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/> : ''}
+        <Form selectGame={this.selectGame} gameID={this.state.gameID} playerOne={this.state.playerOne} playerTwo={this.state.playerTwo}/>
+        {this.state.gameType === "blackjack" ? 
+          <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/> : 
+          ''}
       </div>
     );
   }

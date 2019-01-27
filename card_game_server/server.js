@@ -2,6 +2,7 @@
 
 const express = require('express');
 const SocketServer = require('ws').Server;
+const uuidv4 = require('uuid/v4');
 
 // Set the port to 3001
 const PORT = 3001;
@@ -12,6 +13,9 @@ const server = express()
   .use(express.static('public'))
   .listen(PORT, '0.0.0.0', 'localhost', () => console.log(`Listening on ${ PORT }`));
 
+// Create a queue
+var queue = []; 
+
 // Create the WebSockets server
 const wss = new SocketServer({ server });
 
@@ -21,6 +25,9 @@ const wss = new SocketServer({ server });
 
 wss.on('connection', (ws) => {
   console.log('Client connected');
+
+  // assign unique ID for each client on connection
+  let clientID = uuidv4();
 
   const fullDeck = [
     {cardId: 1, number: 1, suit: 1},
@@ -81,18 +88,51 @@ wss.on('connection', (ws) => {
   ws.on('message', function incoming(data) {
     const clientData = JSON.parse(data);
 
-    if (clientData.type === "blackjackHand") {
+    switch (clientData.type) {
+
+      case 'gameType':
+      wss.clients.forEach(client => {
+        if (clientData.data === 'blackjack' && queue.includes(clientID) === false) {
+          queue.push(clientID);
+          console.log("In queue: ", queue);
+        }
+
+      // BUG: adding duplicate IDs when `queue.length >= 2 || queue.length === 2`
+        if (queue.length > 2) {
+          let players = queue.splice(0, 2);
+          
+          let gameSession = {
+            type: 'session',
+            gameID: uuidv4(),
+            playerOne: players[0],
+            playerTwo: players[1]
+          }
+
+          client.send(JSON.stringify(gameSession));
+        }
+      });
+      break;
+
+      case 'blackjackHand':
       wss.clients.forEach(client => {
         client.send(JSON.stringify(clientData));
       });
+      break;
     }
 
-    // console.log(clientData);
-    wss.clients.forEach(client => {
-      client.send(JSON.stringify(currentDeck));
+      wss.clients.forEach(client => {
+        client.send(JSON.stringify(currentDeck));
+      });
     });
-  });
+
 
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
-  ws.on('close', () => console.log('Client disconnected'));
+  ws.on('close', () => {
+  console.log('Client disconnected')
+  let disconnect = queue.indexOf(clientID);
+    if (disconnect > -1) {
+      queue.splice(disconnect, 1);
+      console.log("After disconnect", queue)
+    }
+  });
 });
