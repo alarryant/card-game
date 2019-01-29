@@ -1,9 +1,22 @@
+// server.js
+
+require('dotenv').config();
+const env = process.env.ENV || 'development';
+
 const express = require('express');
 const SocketServer = require('ws').Server;
 const uuidv4 = require('uuid/v4');
+const bodyParser = require('body-parser');
+const knexConfig = require('./knexfile');
+const knex = require('knex')(knexConfig[env]);
+const path = require('path');
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+// app.use(express.static(path.join(__dirname, 'client/build')));
 
 // Set the port to 3001
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Create a new express server
 const server = express()
@@ -12,7 +25,7 @@ const server = express()
   .listen(PORT, '0.0.0.0', 'localhost', () => console.log(`Listening on ${ PORT }`));
 
 // Create a queue
-var queue = []; 
+var queue = [];
 
 // Create the WebSockets server
 const wss = new SocketServer({ server });
@@ -99,7 +112,7 @@ wss.on('connection', (ws) => {
       // BUG: adding duplicate IDs when `queue.length >= 2 || queue.length === 2`
         if (queue.length > 2) {
           let players = queue.splice(0, 2);
-          
+
           let gameSession = {
             type: 'session',
             gameID: uuidv4(),
