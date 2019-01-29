@@ -88,11 +88,22 @@ class BlackjackGame extends Component {
 
     return (
       <div>
-        <h1>yes this works</h1>
-        <h5>Player 1</h5>
-        {this.displayBlackjackHand(this.state.player1Hand)}
-        <h5>Player 2</h5>
-        {this.displayBlackjackHand(this.state.player2Hand)}
+        {/* EVERYONE IS PLAYER TWO? */}
+        {this.props.clientID === this.props.playerOne ? 
+        <div>
+          <h1>GAME IS READY! {this.props.gameID}</h1>
+          <h5>Player 1: {this.props.playerOne}</h5>
+          {this.displayBlackjackHand(this.state.player1Hand)}
+        </div>
+        :
+        <div>
+          <h1>GAME IS READY! {this.props.gameID}</h1>
+          <h5>Player 2: {this.props.playerTwo}</h5>
+          {this.displayBlackjackHand(this.state.player2Hand)}
+        </div>
+        }
+        
+        
       </div>);
   }
 }

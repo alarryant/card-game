@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import Form from './Form.jsx';
 
+import Form from './Form.jsx';
 import Header from './_header.jsx';
 import Login from './Login.jsx';
 import Blackjack from './Blackjack.jsx';
@@ -44,19 +44,19 @@ class App extends Component {
     // receives data from server
     this.socket.onmessage = (event) => {
       let serverData = JSON.parse(event.data);
-      console.log(serverData)
       
       switch (serverData.type) {
 
         case 'session':
         let gameID = serverData.gameID;
+        let clientID = serverData.clientID;
         let playerOne = serverData.playerOne;
         let playerTwo = serverData.playerTwo;
 
         this.setState({ gameID: gameID, 
+                        clientID: clientID,
                         playerOne: playerOne, 
                         playerTwo: playerTwo });
-        console.log("BEGIN GAME! ", this.state)
         break;
 
         case 'currentDeck':
@@ -76,9 +76,10 @@ class App extends Component {
       <div>
         <Header />
         <Login loginInfo = {this.loginInfo} />
-        <Form selectGame={this.selectGame} gameID={this.state.gameID} playerOne={this.state.playerOne} playerTwo={this.state.playerTwo}/>
+        <Form selectGame={this.selectGame} />
         {this.state.gameType === "blackjack" ? 
-          <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/> : 
+          <Blackjack currentDeck={this.state.currentDeck}       sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand} gameID={this.state.gameID} clientID={this.state.clientID} playerOne={this.state.playerOne} playerTwo={this.state.playerTwo}/> 
+          : 
           ''}
       </div>
     );

@@ -1,5 +1,3 @@
-// server.js
-
 const express = require('express');
 const SocketServer = require('ws').Server;
 const uuidv4 = require('uuid/v4');
@@ -27,7 +25,8 @@ wss.on('connection', (ws) => {
   console.log('Client connected');
 
   // assign unique ID for each client on connection
-  let clientID = uuidv4();
+  var clientID = uuidv4();
+
 
   const fullDeck = [
     {cardId: 1, number: 1, suit: 1},
@@ -104,10 +103,11 @@ wss.on('connection', (ws) => {
           let gameSession = {
             type: 'session',
             gameID: uuidv4(),
+            clientID: clientID,
             playerOne: players[0],
             playerTwo: players[1]
           }
-
+          console.log('Begin Game!', gameSession)
           client.send(JSON.stringify(gameSession));
         }
       });
