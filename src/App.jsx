@@ -41,13 +41,13 @@ class App extends Component {
       switch (serverData.type) {
         case 'session':
         let gameID = serverData.gameID;
+        // let clientID = serverData.clientID;
         let playerOne = serverData.playerOne;
         let playerTwo = serverData.playerTwo;
 
         this.setState({ gameID: gameID,
                         playerOne: playerOne,
                         playerTwo: playerTwo });
-        console.log("BEGIN GAME! ", this.state)
         break;
 
         case 'login':

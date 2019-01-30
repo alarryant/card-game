@@ -41,6 +41,7 @@ wss.on('connection', (ws) => {
   console.log('Client connected');
 
   // assign unique ID for each client on connection
+  var clientID = uuidv4();
 
   const fullDeck = [
     {cardId: 1, number: 1, suit: 1},
@@ -106,6 +107,7 @@ wss.on('connection', (ws) => {
     const clientData = JSON.parse(data);
 
     switch (clientData.type) {
+
       case 'login':
       let currentUser = uuidv4();
       let gameType = clientData.gameType;
