@@ -3,6 +3,12 @@ var webpack = require('webpack');
 
 module.exports = {
   devtool: 'eval',
+  devServer: {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"
+    }
+  },
   entry: [
     'webpack-dev-server/client?http://localhost:3000',
     './src/index.jsx'

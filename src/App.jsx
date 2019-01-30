@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import Header from './_header.jsx';
 import Login from './Login.jsx';
 import Blackjack from './Blackjack.jsx';
+import axios from 'axios';
 
 class App extends Component {
 
@@ -14,13 +15,19 @@ class App extends Component {
   }
 
   loginInfo = (email, password, gameType) => {
-    const userLogin = {
-      type: 'login',
-      email: email,
-      password: password,
-      gameType: gameType
-    };
-    this.socket.send(JSON.stringify(userLogin));
+
+    // axios({
+    //   method: 'post',
+    //   url: 'localhost:3001/login',
+    //   data: {
+    //     type: 'login', email: email, password: password, gameType: gameType
+    //   }
+    // }).then((res) => console.log(res))
+    axios.post('ws://localhost:3001/login', { type: 'login', email: email, password: password, gameType: gameType })
+      .then((res) => {
+        console.log("HERLIAHJSLDJALSDJ")
+        console.log(res);
+    });
   }
 
   sendBlackjackHands = hands => {

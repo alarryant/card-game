@@ -175,7 +175,7 @@ class BlackjackGame extends Component {
       <div>
 
       {/* EVERYONE IS PLAYER TWO? */}
-      {this.props.clientID === this.props.playerOne ? 
+      {/*this.props.clientID === this.props.playerOne ? */}
         <div>
            {this.state.newRound ? <button onClick={this.handleDeal}>Deal</button> : ''}
           <h1>GAME IS READY! {this.props.gameID}</h1>
@@ -184,7 +184,7 @@ class BlackjackGame extends Component {
           {this.state.P1hitOption ? <button onClick={this.handleP1Hit}>Hit</button> : ''}
           {this.state.P1bust ? <h1>You lost!</h1> : ''}
         </div>
-        :
+        {/*:*/}
         <div>
           {this.state.newRound ? <button onClick={this.handleDeal}>Deal</button> : ''}
           <h1>GAME IS READY! {this.props.gameID}</h1>
@@ -193,7 +193,7 @@ class BlackjackGame extends Component {
           {this.state.P2hitOption ? <button onClick={this.handleP2Hit}>Hit</button> : ''}
           {this.state.P2bust ? <h1>You lost!</h1> : ''}
         </div>
-        }
+        {/*}}*/}
         </div>
         )}
 }
