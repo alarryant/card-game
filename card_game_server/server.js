@@ -11,8 +11,8 @@ const knexConfig = require('./knexfile');
 const knex = require('knex')(knexConfig[env]);
 const path = require('path');
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.json());
 // app.use(express.static(path.join(__dirname, 'client/build')));
 
 // Set the port to 3001
@@ -25,7 +25,10 @@ const server = express()
   .listen(PORT, '0.0.0.0', 'localhost', () => console.log(`Listening on ${ PORT }`));
 
 // Create a queue
-var queue = [];
+var blackjackQueue = [];
+var warQueue = [];
+var currentBlackjackGame = null;
+var currentWarGame = null;
 
 // Create the WebSockets server
 const wss = new SocketServer({ server });
@@ -38,7 +41,6 @@ wss.on('connection', (ws) => {
   console.log('Client connected');
 
   // assign unique ID for each client on connection
-  let clientID = uuidv4();
 
   const fullDeck = [
     {cardId: 1, number: 1, suit: 1},
@@ -95,34 +97,74 @@ wss.on('connection', (ws) => {
     {cardId: 52, number: 13, suit: 2}];
 
   var currentDeck = {type: "currentDeck", data: fullDeck};
+  ws.on('request', function(request) {
+    console.log("this is in ws request", request);
+    console.log("this is in ws request cookies", request.cookies);
+  });
 
   ws.on('message', function incoming(data) {
     const clientData = JSON.parse(data);
 
     switch (clientData.type) {
-
-      case 'gameType':
-      wss.clients.forEach(client => {
-        if (clientData.data === 'blackjack' && queue.includes(clientID) === false) {
-          queue.push(clientID);
-          console.log("In queue: ", queue);
-        }
-
-      // BUG: adding duplicate IDs when `queue.length >= 2 || queue.length === 2`
-        if (queue.length > 2) {
-          let players = queue.splice(0, 2);
-
-          let gameSession = {
-            type: 'session',
-            gameID: uuidv4(),
-            playerOne: players[0],
-            playerTwo: players[1]
+      case 'login':
+      let currentUser = uuidv4();
+      let gameType = clientData.gameType;
+      knex('users')
+        .select('id', 'username')
+        .where({
+          email: clientData.email,
+          password: clientData.password
+          })
+        .then((userData) => {
+          if (gameType === "blackjack") {
+            blackjackQueue.push(userData[0]);
+            if (blackjackQueue.length === 1) {
+              knex('games')
+                .insert({
+                  type: gameType,
+                  date: new Date()
+                })
+                .returning('id')
+                .then((gameData) => {
+                  currentBlackjackGame = gameData[0];
+                  wss.clients.forEach(client => {
+                    client.send(JSON.stringify({type: "login", msg: "ur in q for blackjack"}));
+                  });
+                });
+            } else if (blackjackQueue.length === 2) {
+              let formattedData = {users: blackjackQueue, type: "login", game_id: currentBlackjackGame, currentDeck: fullDeck};
+              wss.clients.forEach(client => {
+                client.send(JSON.stringify(formattedData));
+              });
+              blackjackQueue.pop();
+              blackjackQueue.pop();
+            }
+          } else if (gameType === "war") {
+            warQueue.push(userData[0]);
+            if (warQueue.length === 1) {
+              knex('games')
+                .insert({
+                  type: gameType,
+                  date: new Date()
+                })
+                .returning('id')
+                .then((gameData) => {
+                  currentWarGame = gameData[0];
+                  wss.clients.forEach(client => {
+                    client.send(JSON.stringify({type: "login", msg: "ur in q for war"}));
+                  });
+                });
+            } else if (warQueue.length === 2) {
+              let formattedData = {users: warQueue, type: "login", game_id: currentWarGame, currentDeck: fullDeck};
+              wss.clients.forEach(client => {
+                client.send(JSON.stringify(formattedData));
+              });
+              warQueue.pop();
+              warQueue.pop();
+            }
           }
-
-          client.send(JSON.stringify(gameSession));
-        }
-      });
-      break;
+        });
+        break;
 
       case 'blackjackHand':
       wss.clients.forEach(client => {
@@ -139,11 +181,10 @@ wss.on('connection', (ws) => {
 
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
   ws.on('close', () => {
-  console.log('Client disconnected')
-  let disconnect = queue.indexOf(clientID);
+  console.log('Client disconnected');
+  let disconnect = blackjackQueue.indexOf(currentUser);
     if (disconnect > -1) {
-      queue.splice(disconnect, 1);
-      console.log("After disconnect", queue)
+      blackjackQueue.splice(disconnect, 1);
     }
   });
 });
