@@ -24,7 +24,7 @@ class App extends Component {
   }
 
   sendBlackjackHands = hands => {
-    let handData = {type: "blackjackHand", data: hands}
+    let handData = {type: "blackjackHand", data: hands, players: this.state.players}
     this.socket.send(JSON.stringify(handData));
   }
 
@@ -52,6 +52,7 @@ class App extends Component {
 
         case 'login':
           if (serverData.users && (serverData.users.length === 2)) {
+            console.log(serverData);
             this.setState({players: serverData.users, game_id: serverData.game_id, inQueue: false, currentDeck: serverData.currentDeck});
           } else {
             this.setState({inQueue: true});
@@ -64,6 +65,7 @@ class App extends Component {
 
         case 'blackjackHand':
         this.setState({currentDeck: serverData.data.currentDeck,
+                       players: serverData.data.players,
                        player1Hand: serverData.data.player1Hand,
                        player2Hand: serverData.data.player2Hand});
         break;
@@ -76,7 +78,7 @@ class App extends Component {
         <Header />
         <Login loginInfo={this.loginInfo}/>
         {this.state.inQueue ? '' :
-          <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/>}
+          <Blackjack currentDeck={this.state.currentDeck} sendBlackjackHands={this.sendBlackjackHands} players={this.state.players} player1Hand={this.state.player1Hand} player2Hand={this.state.player2Hand}/>}
       </div>
     );
   }

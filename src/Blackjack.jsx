@@ -63,6 +63,8 @@ class BlackjackGame extends Component {
 
   displayBlackjackHand(hand=[]) {
 
+
+
     const defHandStyle = {
       maxHeight:'34vh',
       minHeight:'34vh',
@@ -169,13 +171,18 @@ class BlackjackGame extends Component {
     this.checkP2HandValue(this.state.player2Hand);
   }
 
+  componentDidUpdate(props) {
+    if ((this.state.currentDeck !== this.props.currentDeck) && this.props.currentDeck) {
+      this.setState({players: this.props.players, currentDeck: this.props.currentDeck, player1Hand: this.props.player1Hand, player2Hand: this.props.player2Hand, newRound: false});
+    }
+  }
+
   render() {
 
     return (
       <div>
-
       {/* EVERYONE IS PLAYER TWO? */}
-      {this.props.clientID === this.props.playerOne ? 
+      {/*this.props.clientID === this.props.playerOne ? */}
         <div>
            {this.state.newRound ? <button onClick={this.handleDeal}>Deal</button> : ''}
           <h1>GAME IS READY! {this.props.gameID}</h1>
@@ -184,16 +191,16 @@ class BlackjackGame extends Component {
           {this.state.P1hitOption ? <button onClick={this.handleP1Hit}>Hit</button> : ''}
           {this.state.P1bust ? <h1>You lost!</h1> : ''}
         </div>
-        :
+        {/*:*/}
         <div>
-          {this.state.newRound ? <button onClick={this.handleDeal}>Deal</button> : ''}
-          <h1>GAME IS READY! {this.props.gameID}</h1>
+          {this.state.newRound ? <h1>Waiting for Player 1</h1> : ''}
+          {/*<h1>GAME IS READY! {this.props.gameID}</h1>*/}
           <h5>Player 2: {this.props.playerTwo}</h5>
           {this.displayBlackjackHand(this.state.player2Hand)}
           {this.state.P2hitOption ? <button onClick={this.handleP2Hit}>Hit</button> : ''}
           {this.state.P2bust ? <h1>You lost!</h1> : ''}
         </div>
-        }
+        {/*}*/}
         </div>
         )}
 }

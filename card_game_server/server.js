@@ -5,7 +5,7 @@ const env = process.env.ENV || 'development';
 
 const express = require('express');
 const SocketServer = require('ws').Server;
-const uuidv4 = require('uuid/v4');
+const uuidv4 = require('uuidv4');
 const bodyParser = require('body-parser');
 const knexConfig = require('./knexfile');
 const knex = require('knex')(knexConfig[env]);
@@ -29,6 +29,7 @@ var blackjackQueue = [];
 var warQueue = [];
 var currentBlackjackGame = null;
 var currentWarGame = null;
+// var users = [];
 
 // Create the WebSockets server
 const wss = new SocketServer({ server });
@@ -41,7 +42,7 @@ wss.on('connection', (ws) => {
   console.log('Client connected');
 
   // assign unique ID for each client on connection
-  var clientID = uuidv4();
+  // var clientID = uuidv4();
 
   const fullDeck = [
     {cardId: 1, number: 1, suit: 1},
@@ -98,10 +99,6 @@ wss.on('connection', (ws) => {
     {cardId: 52, number: 13, suit: 2}];
 
   var currentDeck = {type: "currentDeck", data: fullDeck};
-  ws.on('request', function(request) {
-    console.log("this is in ws request", request);
-    console.log("this is in ws request cookies", request.cookies);
-  });
 
   ws.on('message', function incoming(data) {
     const clientData = JSON.parse(data);
@@ -109,7 +106,7 @@ wss.on('connection', (ws) => {
     switch (clientData.type) {
 
       case 'login':
-      let currentUser = uuidv4();
+      // let currentUser = uuidv4();
       let gameType = clientData.gameType;
       knex('users')
         .select('id', 'username')
@@ -118,8 +115,11 @@ wss.on('connection', (ws) => {
           password: clientData.password
           })
         .then((userData) => {
+          ws.id = uuidv4();
+          let user = { websocketId: ws.id, userId: userData[0].id, username: userData[0].username};
+          // users.push(user);
           if (gameType === "blackjack") {
-            blackjackQueue.push(userData[0]);
+            blackjackQueue.push(user);
             if (blackjackQueue.length === 1) {
               knex('games')
                 .insert({
@@ -169,8 +169,12 @@ wss.on('connection', (ws) => {
         break;
 
       case 'blackjackHand':
+      let player1Connection = clientData.players[0].websocketId;
+      let player2Connection = clientData.players[1].websocketId;
       wss.clients.forEach(client => {
-        client.send(JSON.stringify(clientData));
+        if (client.id === player1Connection || client.id === player2Connection) {
+          client.send(JSON.stringify(clientData));
+        }
       });
       break;
     }
@@ -184,9 +188,9 @@ wss.on('connection', (ws) => {
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
   ws.on('close', () => {
   console.log('Client disconnected');
-  let disconnect = blackjackQueue.indexOf(currentUser);
-    if (disconnect > -1) {
-      blackjackQueue.splice(disconnect, 1);
-    }
+  // let disconnect = blackjackQueue.indexOf(currentUser);
+  //   if (disconnect > -1) {
+  //     blackjackQueue.splice(disconnect, 1);
+  //   }
   });
 });
