@@ -41,9 +41,6 @@ const wss = new SocketServer({ server });
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
-  // assign unique ID for each client on connection
-  // var clientID = uuidv4();
-
   const fullDeck = [
     {cardId: 1, number: 1, suit: 1},
     {cardId: 2, number: 1, suit: 3},
@@ -98,16 +95,43 @@ wss.on('connection', (ws) => {
     {cardId: 51, number: 13, suit: 0},
     {cardId: 52, number: 13, suit: 2}];
 
-  var currentDeck = {type: "currentDeck", data: fullDeck};
-
   ws.on('message', function incoming(data) {
     const clientData = JSON.parse(data);
 
     switch (clientData.type) {
 
+      case 'register':
+        knex('users')
+          .select('*')
+          .where('email', '=', clientData.email)
+          .then((alreadyUser) => {
+            let alreadyUserId = uuidv4();
+            ws.id = alreadyUserId;
+            if (alreadyUser.length === 0) {
+              knex('users')
+                .insert({ email: clientData.email,
+                          password: clientData.password,
+                          username: clientData.username})
+                .returning('id')
+                .then((userData) => {
+                  let user = { websocketId: ws.id, userId: userData[0], username: clientData.username};
+                  wss.clients.forEach(client => {
+                    if (client.id === user.websocketId) {
+                      client.send(JSON.stringify({type: 'login', user: user}));
+                    }
+                  });
+                });
+            } else {
+              wss.clients.forEach(client => {
+                if (client.id === alreadyUserId) {
+                  client.send(JSON.stringify({type: "message", msg: "this email is already registered, please log in"}));
+                }
+              });
+            }
+          });
+      break;
+
       case 'login':
-      // let currentUser = uuidv4();
-      let gameType = clientData.gameType;
       knex('users')
         .select('id', 'username')
         .where({
@@ -117,71 +141,111 @@ wss.on('connection', (ws) => {
         .then((userData) => {
           ws.id = uuidv4();
           let user = { websocketId: ws.id, userId: userData[0].id, username: userData[0].username};
-          // users.push(user);
-          if (gameType === "blackjack") {
-            blackjackQueue.push(user);
-            if (blackjackQueue.length === 1) {
-              knex('games')
-                .insert({
-                  type: gameType,
-                  date: new Date()
-                })
-                .returning('id')
-                .then((gameData) => {
-                  currentBlackjackGame = gameData[0];
-                  wss.clients.forEach(client => {
-                    client.send(JSON.stringify({type: "login", msg: "ur in q for blackjack"}));
-                  });
-                });
-            } else if (blackjackQueue.length === 2) {
-              let formattedData = {users: blackjackQueue, type: "login", game_id: currentBlackjackGame, currentDeck: fullDeck};
-              wss.clients.forEach(client => {
-                client.send(JSON.stringify(formattedData));
-              });
-              blackjackQueue.pop();
-              blackjackQueue.pop();
+          console.log("this is server login", user);
+          wss.clients.forEach(client => {
+            if (client.id === user.websocketId) {
+              client.send(JSON.stringify({type: 'login', user: user}));
             }
-          } else if (gameType === "war") {
-            warQueue.push(userData[0]);
-            if (warQueue.length === 1) {
-              knex('games')
-                .insert({
-                  type: gameType,
-                  date: new Date()
-                })
-                .returning('id')
-                .then((gameData) => {
-                  currentWarGame = gameData[0];
-                  wss.clients.forEach(client => {
-                    client.send(JSON.stringify({type: "login", msg: "ur in q for war"}));
-                  });
-                });
-            } else if (warQueue.length === 2) {
-              let formattedData = {users: warQueue, type: "login", game_id: currentWarGame, currentDeck: fullDeck};
-              wss.clients.forEach(client => {
-                client.send(JSON.stringify(formattedData));
-              });
-              warQueue.pop();
-              warQueue.pop();
-            }
-          }
+          });
         });
-        break;
+      break;
+
+      case 'gameType':
+      console.log("this is game type in server", clientData);
+      let gameType = clientData.gameType;
+      let user = clientData.user;
+      if (gameType === "blackjack") {
+        blackjackQueue.push(user);
+        if (blackjackQueue.length === 1) {
+          knex('games')
+            .insert({
+              type: gameType,
+              date: new Date()
+            })
+            .returning('id')
+            .then((gameData) => {
+              currentBlackjackGame = gameData[0];
+            });
+        } else if (blackjackQueue.length === 2) {
+          let formattedData = {users: blackjackQueue, type: "gameType", game_id: currentBlackjackGame, currentDeck: fullDeck};
+          let player1Connection = blackjackQueue[0].websocketId;
+          let player2Connection = blackjackQueue[1].websocketId;
+          wss.clients.forEach(client => {
+            if (client.id === player1Connection) {
+              formattedData.player = 1;
+              client.send(JSON.stringify(formattedData));
+            } else if (client.id === player2Connection) {
+              formattedData.player = 2;
+              client.send(JSON.stringify(formattedData));
+            }
+          });
+          blackjackQueue.pop();
+          blackjackQueue.pop();
+        }
+      } else if (gameType === "war") {
+        warQueue.push(user);
+        if (warQueue.length === 1) {
+          knex('games')
+            .insert({
+              type: gameType,
+              date: new Date()
+            })
+            .returning('id')
+            .then((gameData) => {
+              currentWarGame = gameData[0];
+              wss.clients.forEach(client => {
+                client.send(JSON.stringify({type: "gameType", player: 1}));
+              });
+            });
+        } else if (warQueue.length === 2) {
+          let formattedData = {users: warQueue, type: "gameType", game_id: currentWarGame, currentDeck: fullDeck};
+          let player1Connection = warQueue[0].websocketId;
+          let player2Connection = warQueue[1].websocketId;
+          wss.clients.forEach(client => {
+            if (client.id === player1Connection) {
+              formattedData.player = 1;
+              client.send(JSON.stringify(formattedData));
+            } else if (client.id === player2Connection) {
+              formattedData.player = 2;
+              client.send(JSON.stringify(formattedData));
+            }
+          });
+          warQueue.pop();
+          warQueue.pop();
+        }
+      }
+      break;
 
       case 'blackjackHand':
       let player1Connection = clientData.players[0].websocketId;
       let player2Connection = clientData.players[1].websocketId;
+
+      let p1Data = {type: "blackjackHand",
+                    player: 1,
+                    currentDeck: clientData.data.hands.currentDeck,
+                    player1Hand: clientData.data.hands.player1Hand,
+                    player2Hand: clientData.data.hands.player2Hand,
+                    players: clientData.players,
+                    P1Turn: clientData.data.P1Turn,
+                    P2Turn: clientData.data.P2Turn};
+      let p2Data = {type: "blackjackHand",
+                    player: 2,
+                    currentDeck: clientData.data.hands.currentDeck,
+                    player1Hand: clientData.data.hands.player1Hand,
+                    player2Hand: clientData.data.hands.player2Hand,
+                    players: clientData.players,
+                    P1Turn: clientData.data.P1Turn,
+                    P2Turn: clientData.data.P2Turn};
+
       wss.clients.forEach(client => {
-        if (client.id === player1Connection || client.id === player2Connection) {
-          client.send(JSON.stringify(clientData));
+        if (client.id === player1Connection) {
+          client.send(JSON.stringify(p1Data));
+        } else if (client.id === player2Connection) {
+          client.send(JSON.stringify(p2Data));
         }
       });
       break;
     }
-
-      wss.clients.forEach(client => {
-        client.send(JSON.stringify(currentDeck));
-      });
     });
 
 

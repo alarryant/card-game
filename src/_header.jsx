@@ -1,21 +1,28 @@
 import React, {Component} from 'react';
+import Register from './Register.jsx';
 
 
-function NavBar(props){
+class NavBar extends Component {
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
     return (
     <nav>
         <h1>Angenica-Mongela Games</h1>
-        <button>Register</button>
     </nav>
     );
+    }
 }
 
 class Header extends Component {
-    
+
     render() {
         return(
             <div>
                 <NavBar/>
+                <Register registerInfo={this.props.registerInfo}/>
             </div>
         )
     }
