@@ -61,25 +61,11 @@ class BlackjackGame extends Component {
   };
 
   displayBlackjackHand(hand=[]) {
-
-    const defHandStyle = {
-      maxHeight:'30vh',
-      minHeight:'20vh',
-
-      maxWidth:'10vw',
-      padding: 0,
-    };
-
-
-    return hand.map(card => {
-      return (
-        <div>
-          <Hand cards={[
-      { rank: card.number, suit: card.suit },
-    ]} hidden={false} style={defHandStyle} />
-        </div>
-      )
+    let formattedHand = [];
+    hand.map(card => {
+      formattedHand.push({rank: card.number, suit: card.suit})
     })
+    return formattedHand
   }
 
   checkHandValue(p1=[], p2=[]) {
@@ -193,6 +179,14 @@ class BlackjackGame extends Component {
   }
 
   render() {
+    const defHandStyle = {
+      maxHeight:'40vh',
+      minHeight:'20vh',
+      backgroundColor: 'white',
+
+      maxWidth:'20vw',
+      padding: 0,
+    };
 
     return (
       <div>
@@ -200,14 +194,14 @@ class BlackjackGame extends Component {
           <button onClick={this.handleDeal}>Deal</button>
           {(this.state.P1Turn === 0) && (this.state.P2Turn === 0) ? <h1>GAME IS READY!</h1> : ''}
           <h5>Player 1: {/*this.props.players[0].username*/}</h5>
-          {this.displayBlackjackHand(this.state.player1Hand)}
+          <Hand cards={this.displayBlackjackHand(this.state.player1Hand)} hidden={false} style={defHandStyle} />
           {(this.state.P1hitOption && (this.state.P1Turn <= this.state.P2Turn)) && (this.state.currentPlayer === 1) ? <button onClick={this.handleP1Hit}>Hit</button> : ''}
           {this.state.P1bust && (this.state.currentPlayer === 1) ? <h1>You lost!</h1> : ''}
           {this.state.P2bust && (this.state.currentPlayer === 1) ? <h1>You won!</h1> : ''}
         </div>
         <div>
           <h5>Player 2: {/*this.props.players[1].username*/}</h5>
-          {this.displayBlackjackHand(this.state.player2Hand)}
+          <Hand cards={this.displayBlackjackHand(this.state.player2Hand)} hidden={false} style={defHandStyle} />
           {(this.state.P2hitOption && (this.state.P2Turn <= this.state.P1Turn)) && (this.state.currentPlayer === 2) ? <button onClick={this.handleP2Hit}>Hit</button> : ''}
           {this.state.P2bust && (this.state.currentPlayer === 2) ? <h1>You lost!</h1> : ''}
           {this.state.P1bust && (this.state.currentPlayer === 2) ? <h1>You won!</h1> : ''}
